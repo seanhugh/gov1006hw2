@@ -179,9 +179,60 @@ for(i in 1:length(no_cases)){
 judge.means <- cbind(judge.means, no_cases)
 
 ### Calculating the outcome variable
+no_liberalvote <- matrix(data = NA, nrow = nrow(judge.means), ncol = 1)
+for(i in 1:length(no_liberalvote)){
+  stuff <- women.cases[which(women.cases$name == judge.means$name[i]),]
+  no_liberalvote[i] <- nrow(subset(stuff, vote == 2 | vote == 3))
+}
 
+lib_vote_share <- no_liberalvote/no_cases
+
+judge.means <- cbind(judge.means, no_liberalvote, lib_vote_share)
+judge.means <- judge.means %>% 
+  filter(! is.na(girls))
+
+### Subsetting Data to Various Populations (for use later)
+# Subset women, men, republicans, and democrats
+women.means <- judge.means %>% 
+                filter(woman == 1)
+men.means <- judge.means %>% 
+                filter(woman == 0)
+rep.means <- judge.means %>% 
+  filter(republican == 1)
+dem.means <- judge.means %>% 
+  filter(republican == 0)
 
 ##############################
 ### Fig. 1
 ##############################
+plot(density(judge.means$lib_vote_share), 
+     xlim = c(-.4,1.4), ylim = c(0,2.5),
+     ylab = "", xlab = "Proportion of Cases Decided in a Feminist Direction", 
+     yaxt = "n", 
+     bty = "n", 
+     main = "",
+     col = "black", lwd = 2)
+lines(density(rep.means$lib_vote_share), 
+      col = "firebrick", lwd = 2, lty  = 2)
+lines(density(dem.means$lib_vote_share), 
+      col = "dodgerblue", lwd = 2, lty  = 3)
+abline(v = .5, col = "grey50", lty = 2)
+text(x = .5, y = 2.4, "Less Feminist", col = "grey50", pos = 2, cex = 0.9)
+text(x = .5, y = 2.4, "More Feminist", col = "grey50", pos = 4, cex = 0.9)
+text(x = .25, y = 1.7, "Republicans", pos = 2, cex = 0.9)
+text(x = .7, y = 1, "Democrats", pos = 4, cex = 0.9)
+text(x = .075, y = .6, "All", pos = 4, cex = 0.9)
 
+ggplot(judge.means, aes(lib_vote_share)) +
+  geom_density() +
+  geom_density(data = rep.means, aes(lib_vote_share), linetype = "dashed") +
+  geom_density(data = dem.means, aes(lib_vote_share), linetype = "dotted") +
+  geom_vline(xintercept = .5, linetype = 2, alpha = .25) +
+  xlim(-.4,1.4) + ylim(0,2.5) +
+  labs(x = "Proportion of Cases Decided in a Feminist Direction") +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
