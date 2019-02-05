@@ -1,0 +1,87 @@
+---
+title: "hw2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(Zelig)
+library("ZeligChoice")
+library(xtable)		
+library(reshape)
+library(apsrtable)
+library(stargazer)
+library(rms)
+
+sim <- Zelig:::sim
+
+cl   <- function(dat,fm, cluster){
+           require(sandwich, quietly = TRUE)
+           require(lmtest, quietly = TRUE)
+           M <- length(unique(cluster))
+           N <- length(cluster)
+           K <- fm$rank
+           dfc <- (M/(M-1))*((N-1)/(N-K))
+           uj  <- apply(estfun(fm),2, function(x) tapply(x, cluster, sum));
+           vcovCL <- dfc*sandwich(fm, meat=crossprod(uj)/N)
+           coeftest(fm, vcovCL) }
+```
+
+
+```{r LOADDATA}
+
+########################################################
+## Loading the Data
+########################################################
+
+## This loads three data sets
+## 1. Gender cases
+## 2. Cleaned by-judge data
+## 3. Non-gender cases, downloaded from Kuersten and Haire's website
+## (Commented out; their data are available from their website)
+
+# ## Gender cases only
+ women.cases <- read.csv("./glynn_sen_daughters_by_case_1.csv", stringsAsFactors = FALSE) 
+
+# ## Removing male plaintiffs:
+ women.cases <- subset(women.cases, femplaintiff == 1)
+
+ women.cases <- subset(women.cases, area == "employment" | area == "Title IX" | area == "pregnancy" | area == "abortion" | area == "reproductive rights")
+
+ women.cases$area <- factor(women.cases$area, levels = c("abortion","employment","pregnancy","reproductive rights","Title IX"))
+
+# ## All cases, including non-gender cases (from Ashlyn Kuersten/Susan Haire's coding)
+# cases <- read.csv("cases.for.analysis.csv")	
+
+judge.means <- read.csv("glynn_sen_daughters_by_judge.csv", stringsAsFactors = FALSE)
+
+all <- subset(judge.means, girls != "NaN") # subsets judge
+								  # data to those for 
+								  # whom we have fertility data
+```
+
+```{r TABLE1}
+
+aa <- table(all$republican, all$child)
+bb <- table(all$republican, all$girls)
+
+## and now for the table:
+
+aa
+bb
+
+```
+
+```{r TABLE2}
+
+
+
+```
+
+```{r TABLE3}
+
+
+
+```
+
