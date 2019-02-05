@@ -17,8 +17,6 @@ library(rms)
 library(knitr)
 library(kableExtra)
 
-sim <- Zelig:::sim
-
 cl   <- function(dat,fm, cluster){
            require(sandwich, quietly = TRUE)
            require(lmtest, quietly = TRUE)
@@ -32,6 +30,8 @@ cl   <- function(dat,fm, cluster){
 ```
 
 ```{r, message = FALSE, echo = FALSE}
+### DATA ENTRY AND MANIPULATION ####
+
 # ## Gender cases only
  women.cases <- read.csv("glynn_sen_daughters_by_case_1.csv", stringsAsFactors = FALSE) 
 
@@ -185,9 +185,10 @@ kable(demographic_table, digits = 2, caption = "Table 2: Demographics of U.S. Co
   kable_styling(full_width = F)
 
 ```
+
 ```{r, echo = FALSE}
 ########################################################
-## Calculating the Weights (Number of Cases)
+## DATA ENTRY AND MANIPULATION: Calculating the Weights (Number of Cases)
 ########################################################
 
 no_cases <- matrix(data = NA, nrow = nrow(judge.means), ncol = 1)
@@ -232,9 +233,6 @@ rep.means <- subset(judge.means, republican == 1)
 ## just democrats
 dem.means <- subset(judge.means, republican == 0)
 
-```
-
-```{r, echo = FALSE}
 ########################################################
 ## Calculating the Weights (Number of Cases)
 ########################################################
@@ -284,9 +282,9 @@ dem.means <- subset(judge.means, republican == 0)
 
 
 ```{r, echo = FALSE}
-####
+#######
 #Table 3
-#####
+#########
 
 gg <- rbind (summary(judge.means$no_cases), summary(dem.means$no_cases), summary(rep.means$no_cases))
 
@@ -294,5 +292,47 @@ rownames(gg) <- c("All Judges", "Democrats", "Republicans")
 
 kable(gg, caption = "Table 3: Distribution of the number of gender-related cases heard per judge, 1996-2002.", digits = 2) %>%
   kable_styling(full_width = F)
+```
+
+
+```{r, echo = FALSE, results="asis"}
+########################################################
+## Table 4: Core Results (WLS)
+########################################################
+
+################ Results for all judges
+
+# judge.means <- subset(judge.means, child > 0)
+
+my.out1 <- lm(lib_vote_share ~ as.factor(girls) + as.factor(child), 
+	data = judge.means, weights = judge.means$no_cases)
+
+my.out2 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child), 
+	data = judge.means, weights = judge.means$no_cases)
+
+my.out3 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3), 
+	data = judge.means, weights = judge.means$no_cases)
+
+my.out4 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3) + as.factor(circuit.1), 
+	data = judge.means, weights = judge.means$no_cases)
+
+my.out5 <- lm(lib_vote_share ~ as.factor(girls) + as.factor(child), 
+	data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)])
+
+my.out6 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child), 
+	data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)])
+
+my.out7 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3), 
+	data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)])
+
+my.out8 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3) + as.factor(circuit.1), 
+	data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)])
+
+stargazer(my.out1, my.out2, my.out3, my.out4, my.out5, my.out6, my.out7, my.out8,
+	style = "ajps", type = "html", omit.stat = c("f","ser"), title = "Table 4: Weighted Least Squares Results, Gender-Related Cases Only",  digits = 2, omit = c("circuit"), covariate.labels = c("1 Girl","2 Girls","3 Girls","4 Girls","5 Girls","At Least 1 Girl",	
+	"1 Child","2 Children","3 Children","4 Children","5 Children","6 Children","7 Children","8 Children",
+	"9 Children","Republican","Age at Investiture","Catholic","Woman","African American","Hispanic","Constant"), dep.var.labels = "Outcome is proportion of feminist votes.  Models 1--4 are for all judges, while Models 5--8 are for judges with 1--4 children.  (No judge among those with 1--4 children had four girls.) All models include fixed effects for number of children and use weights based on the number of cases heard by each judge.")
+
+## I could not figure out how to change the order of the rows, how to place the note about the different models at the bottom of the table, or how to divide up the chunks of columns with grouped subtitles. Things are a little bit out of order in this table. 
 ```
 
