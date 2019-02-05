@@ -16,6 +16,7 @@ library(stargazer)
 library(rms)
 library(knitr)
 library(kableExtra)
+library(tidyverse)
 
 cl   <- function(dat,fm, cluster){
            require(sandwich, quietly = TRUE)
@@ -30,7 +31,7 @@ cl   <- function(dat,fm, cluster){
 ```
 
 ```{r, message = FALSE, echo = FALSE}
-### DATA ENTRY AND MANIPULATION ####
+### DATA ENTRY AND MANIPULATION (from replication code)####
 
 # ## Gender cases only
  women.cases <- read.csv("glynn_sen_daughters_by_case_1.csv", stringsAsFactors = FALSE) 
@@ -184,11 +185,13 @@ rownames(demographic_table) <- c("Mean No. Children", "Mean No. Girls",
 kable(demographic_table, digits = 2, caption = "Table 2: Demographics of U.S. Courts of Appeals Judges Who Voted on Gender-Related Cases, 1996-2002") %>%
   kable_styling(full_width = F)
 
+# I found that using kable was easier than xtable. The format isn't exact, but it was the best output I could come up with. 
+
 ```
 
 ```{r, echo = FALSE}
 ########################################################
-## DATA ENTRY AND MANIPULATION: Calculating the Weights (Number of Cases)
+## DATA ENTRY AND MANIPULATION (from replication code): Calculating the Weights (Number of Cases)
 ########################################################
 
 no_cases <- matrix(data = NA, nrow = nrow(judge.means), ncol = 1)
@@ -292,6 +295,8 @@ rownames(gg) <- c("All Judges", "Democrats", "Republicans")
 
 kable(gg, caption = "Table 3: Distribution of the number of gender-related cases heard per judge, 1996-2002.", digits = 2) %>%
   kable_styling(full_width = F)
+
+#Similar to table 2, I found it easier to use kable.
 ```
 
 
@@ -304,6 +309,7 @@ kable(gg, caption = "Table 3: Distribution of the number of gender-related cases
 
 # judge.means <- subset(judge.means, child > 0)
 
+#From replication code
 my.out1 <- lm(lib_vote_share ~ as.factor(girls) + as.factor(child), 
 	data = judge.means, weights = judge.means$no_cases)
 
@@ -333,6 +339,9 @@ stargazer(my.out1, my.out2, my.out3, my.out4, my.out5, my.out6, my.out7, my.out8
 	"1 Child","2 Children","3 Children","4 Children","5 Children","6 Children","7 Children","8 Children",
 	"9 Children","Republican","Age at Investiture","Catholic","Woman","African American","Hispanic","Constant"), dep.var.labels = "Outcome is proportion of feminist votes.  Models 1--4 are for all judges, while Models 5--8 are for judges with 1--4 children.  (No judge among those with 1--4 children had four girls.) All models include fixed effects for number of children and use weights based on the number of cases heard by each judge.")
 
-## I could not figure out how to change the order of the rows, how to place the note about the different models at the bottom of the table, or how to divide up the chunks of columns with grouped subtitles. Things are a little bit out of order in this table. 
+## I could not figure out how to change the order of the rows, how to place the note about the different models at the bottom of the table, or how to divide up the chunks of columns with grouped subtitles. Things are a little bit out of order in this table. I found that changing the output/results type was key to successfully knitting.  
 ```
+
+
+
 
