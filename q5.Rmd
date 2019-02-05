@@ -1,0 +1,112 @@
+---
+title: "Gov1006 Hw 2 Q 5"
+author: "Keeley MacAfee"
+date: "2/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(Zelig)
+library("ZeligChoice")
+library(xtable)		
+library(reshape)
+library(apsrtable)
+library(stargazer)
+library(rms)
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+```
+
+```{r}
+## Note: This is the replication code. I put it in a separate rmd file because it wouldn't knit. I couldn't figure out the error messages and my edits seemed to make things worse, so this is just the replication code. Seems like where I was getting the error was around the bootstrap code. 
+
+#######################################################
+## Table 5: Core Results (Case-Level)
+#######################################################
+
+my.out7 <- zelig(progressive.vote ~ as.factor(girls) + as.factor(child), 
+		model = "logit", data = subset(women.cases, child < 5 & child > 0))
+summary(my.out7)
+
+my.out8 <- zelig(progressive.vote ~ I(girls > 0) + as.factor(child), 
+		model = "logit", data = subset(women.cases, child < 5 & child > 0))
+summary(my.out8)
+
+my.out9 <- zelig(progressive.vote ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3) + as.factor(circuit) + as.factor(year), 
+		model = "logit", data = subset(women.cases, child < 5 & child > 0))
+summary(my.out9)
+
+my.out10 <- zelig(progressive.vote ~ I(girls>0) + as.factor(child) + republican 
+	+ age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year) 
+	+ as.factor(area), data = subset(women.cases, child < 5 & child > 0), model = "logit")
+summary(my.out10)
+
+## including clustered standard errors at the case level (bootstrap)
+
+my.out11 <- zelig(progressive.vote ~ I(girls>0) + as.factor(child) + republican 
+	+ age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year) 
+	+ as.factor(area), 
+	data = subset(women.cases, child < 5 & child > 0), model = "logit")
+
+## Note: Running the ordered logit with polr, in subsetting the data, there are some case areas
+## in which there are no observations. Those coefficients are being dropped at POLR gives an
+## warning. Nothing to worry.
+
+my.out12 <- zelig(as.factor(vote) ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3) + as.factor(circuit) + as.factor(year) + as.factor(area), 
+                  model = "ologit", data = subset(women.cases, child < 5 & child > 0))
+summary(my.out12)
+
+## Now: Calculating standard errors bootstrapped at the case level:
+## Note: This takes about 10 minutes to run. 
+
+## Grab the data for these two models
+mod12 <- as.formula("~ progressive.vote + vote + girls +  child + republican +race + age + religion + woman + circuit + year + area + casename")
+dat12 <- model.frame(mod12, data = subset(women.cases, child < 5 & child > 0))
+dat12$casename <- as.character(dat12$casename)
+
+## Create list of data.frames for each case for easy reference
+casenames <- sort(unique(dat12$casename))
+caselist <- lapply(casenames, function(x) dat12[which(dat12$casename == x),])
+names(caselist) <- casenames
+
+## Running the bootstraps
+## Note that not all of the coefficients will be sampled in any given of the 
+## bootstraps - this might result in some warnings form polr
+## (the ordered logit), but is not a problem for the results
+
+boots <- 1000
+b.star11 <- matrix(NA, ncol =length(my.out11$result$coef), nrow = boots)
+colnames(b.star11) <- names(my.out11$result$coef)
+b.star12 <- matrix(NA, ncol =length(my.out12$result$coef), nrow = boots)
+colnames(b.star12) <- names(my.out12$result$coef)
+set.seed(1234)
+for (b in 1:boots) {
+	if ((b%%10) == 0) cat("boot: ", b, "\n")
+	clust.sample <- sample(casenames, replace = TRUE)
+	c.boot <- do.call(rbind,lapply(clust.sample,function(x) caselist[[x]]))
+	out11.star <- glm(progressive.vote ~ I(girls>0) + as.factor(child) + republican 
+	+ age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year) + as.factor(area), data = c.boot, family = binomial("logit"))
+    out12.star <- polr(as.factor(vote) ~ I(girls>0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race ==3) + as.factor(circuit) + as.factor(year) + as.factor(area), data = c.boot)	
+  b.star11[b,names(out11.star$coef)] <- out11.star$coef
+	b.star12[b,names(out12.star$coef)] <- out12.star$coef
+		}
+bcse11 <- apply(b.star11, 2, sd, na.rm=TRUE)		
+bcse12 <- apply(b.star12, 2, sd, na.rm=TRUE)		
+#save(list=c("bcse11", "bcse12"), file = "bootstraps.RData")
+## End bootstrap code here
+
+
+## can re-load bootstraped data to avoid having to run previous code
+## load("bootstraps.RData")
+
+## Replacing the normal SEs with the bootstrap SEs for the final Table 5
+stargazer(my.out7, my.out8, my.out9, my.out10, my.out11, my.out12, 
+	style = "ajps", omit.stat = c("f","ser"), dep.var.labels = "Logit and ordered logit results, gender cases only. Outcome is whether judge in a case votes in a feminist direction (Columns 1--5) or in a conservative, moderate, or liberal direction (Column 6).  All models include fixed effects for total number of children and Columns 3--6 include circuit and year fixed effects. Column 5 additionally includes standard errors clustered at the case level", covariate.labels = c("1 Girl","2 Girls","3 Girls","At Least 1 Girl",
+	"2 Children","3 Children","4 Children","Republican","Age at Investiture","Catholic","Woman",	
+	"African American","Hispanic", "10th Cir", "11th Cir","2nd Cir","3rd Cir",
+	"4th Cir","5th Cir","6th Cir","7th Cir","8th Cir","9th Cir","DC","1997","1998","1999","2000","2001","2002",
+	"Employment","Pregnancy","Reproduction","Title IX","Constant"),se = list(my.out7 = NULL, my.out8 = NULL, my.out8 = NULL, my.out10 = NULL,my.out11 = bcse11, my.out12 = bcse12), digits = 2)
+```
+
