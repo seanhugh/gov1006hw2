@@ -125,49 +125,407 @@ $(document).ready(function () {
 </div>
 
 
-<pre class="r"><code>########################################################
-## Loading the Data
-########################################################
-
-## This loads three data sets
-## 1. Gender cases
-## 2. Cleaned by-judge data
-## 3. Non-gender cases, downloaded from Kuersten and Haire's website
-## (Commented out; their data are available from their website)
-
-# ## Gender cases only
- women.cases &lt;- read.csv(&quot;./glynn_sen_daughters_by_case_1.csv&quot;, stringsAsFactors = FALSE) 
-
-# ## Removing male plaintiffs:
- women.cases &lt;- subset(women.cases, femplaintiff == 1)
-
- women.cases &lt;- subset(women.cases, area == &quot;employment&quot; | area == &quot;Title IX&quot; | area == &quot;pregnancy&quot; | area == &quot;abortion&quot; | area == &quot;reproductive rights&quot;)
-
- women.cases$area &lt;- factor(women.cases$area, levels = c(&quot;abortion&quot;,&quot;employment&quot;,&quot;pregnancy&quot;,&quot;reproductive rights&quot;,&quot;Title IX&quot;))
-
-# ## All cases, including non-gender cases (from Ashlyn Kuersten/Susan Haire's coding)
-# cases &lt;- read.csv(&quot;cases.for.analysis.csv&quot;)   
-
-judge.means &lt;- read.csv(&quot;glynn_sen_daughters_by_judge.csv&quot;, stringsAsFactors = FALSE)
-
-all &lt;- subset(judge.means, girls != &quot;NaN&quot;) # subsets judge
-                                  # data to those for 
-                                  # whom we have fertility data</code></pre>
-<pre class="r"><code>aa &lt;- table(all$republican, all$child)
-bb &lt;- table(all$republican, all$girls)
-
-## and now for the table:
-
-aa</code></pre>
-<pre><code>##    
-##      0  1  2  3  4  5  6  7  8  9
-##   0 12 13 33 24 15  4  0  1  0  1
-##   1 13  8 44 30 15  7  3  0  1  0</code></pre>
-<pre class="r"><code>bb</code></pre>
-<pre><code>##    
-##      0  1  2  3  4  5
-##   0 26 35 29 10  1  2
-##   1 36 43 31  9  2  0</code></pre>
+<table>
+<caption>Table 1</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">0</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Democrat</td>
+<td align="right">12</td>
+<td align="right">13</td>
+<td align="right">33</td>
+<td align="right">24</td>
+<td align="right">15</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">103</td>
+</tr>
+<tr class="even">
+<td>Republican</td>
+<td align="right">13</td>
+<td align="right">8</td>
+<td align="right">44</td>
+<td align="right">30</td>
+<td align="right">15</td>
+<td align="right">7</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">121</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table 1 part 2</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">0</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">N</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Democrat</td>
+<td align="right">26</td>
+<td align="right">35</td>
+<td align="right">29</td>
+<td align="right">10</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">103</td>
+</tr>
+<tr class="even">
+<td>Republican</td>
+<td align="right">36</td>
+<td align="right">43</td>
+<td align="right">31</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">121</td>
+</tr>
+</tbody>
+</table>
+<p>Table: Table 8</p>
+<table style="text-align:center">
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+<strong>Liberal Judge-Vote</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+<strong>Model 1</strong>
+</td>
+<td>
+<strong>Model 2</strong>
+</td>
+<td>
+<strong>Model 3</strong>
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+I(girls &gt; 0)
+</td>
+<td>
+0.161<sup>**</sup>
+</td>
+<td>
+0.161<sup>**</sup>
+</td>
+<td>
+0.159<sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.080)
+</td>
+<td>
+(0.068)
+</td>
+<td>
+(0.069)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(child)1
+</td>
+<td>
+-0.119<sup>*</sup>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.067)
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+I(republican == 1)
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.037
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.069)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Constant
+</td>
+<td>
+0.393<sup>***</sup>
+</td>
+<td>
+0.274<sup>***</sup>
+</td>
+<td>
+0.292<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.037)
+</td>
+<td>
+(0.047)
+</td>
+<td>
+(0.059)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+N
+</td>
+<td>
+46
+</td>
+<td>
+21
+</td>
+<td>
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+R-squared
+</td>
+<td>
+0.097
+</td>
+<td>
+0.230
+</td>
+<td>
+0.242
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Adj. R-squared
+</td>
+<td>
+0.055
+</td>
+<td>
+0.189
+</td>
+<td>
+0.158
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td colspan="4" style="text-align:left">
+<sup><em><strong></sup>p &lt; .01; <sup></strong></sup>p &lt; .05; <sup></em></sup>p &lt; .1
+</td>
+</tr>
+</table>
+<table>
+<caption>Table 9</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">0 Girls</th>
+<th align="right">1 Girl</th>
+<th align="right">2 Girls</th>
+<th align="right">3 Girls</th>
+<th align="right">4 Girls</th>
+<th align="right">5 Girls</th>
+<th align="right">0 Girls</th>
+<th align="right">1 Girl</th>
+<th align="right">2 Girls</th>
+<th align="right">3 Girls</th>
+<th align="right">4 Girls</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td align="right">1.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">1.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td align="right">0.4615385</td>
+<td align="right">0.5384615</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0.3750000</td>
+<td align="right">0.6250000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td align="right">0.1515152</td>
+<td align="right">0.4848485</td>
+<td align="right">0.3636364</td>
+<td align="right">0.0000000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0.3181818</td>
+<td align="right">0.5000000</td>
+<td align="right">0.1818182</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td align="right">0.0833333</td>
+<td align="right">0.4583333</td>
+<td align="right">0.3333333</td>
+<td align="right">0.1250000</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0.1333333</td>
+<td align="right">0.3666667</td>
+<td align="right">0.3666667</td>
+<td align="right">0.1333333</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td align="right">0.0666667</td>
+<td align="right">0.0666667</td>
+<td align="right">0.5333333</td>
+<td align="right">0.3333333</td>
+<td align="right">0</td>
+<td align="right">0.00</td>
+<td align="right">0.0666667</td>
+<td align="right">0.2666667</td>
+<td align="right">0.6000000</td>
+<td align="right">0.0666667</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.2500000</td>
+<td align="right">0.5000000</td>
+<td align="right">0</td>
+<td align="right">0.25</td>
+<td align="right">0.1428571</td>
+<td align="right">0.0000000</td>
+<td align="right">0.4285714</td>
+<td align="right">0.2857143</td>
+<td align="right">0.1428571</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">1</td>
+<td align="right">0.00</td>
+<td align="right">0.0000000</td>
+<td align="right">0.3333333</td>
+<td align="right">0.0000000</td>
+<td align="right">0.6666667</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">0.0000000</td>
+<td align="right">1.0000000</td>
+</tr>
+</tbody>
+</table>
 
 
 

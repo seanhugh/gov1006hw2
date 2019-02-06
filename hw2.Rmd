@@ -3,7 +3,7 @@ title: "hw2"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo = FALSE, display = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(Zelig)
@@ -13,6 +13,10 @@ library(reshape)
 library(apsrtable)
 library(stargazer)
 library(rms)
+library(knitr)
+library(tidyverse)
+library(dplyr)
+library(pander)
 
 sim <- Zelig:::sim
 
@@ -29,7 +33,7 @@ cl   <- function(dat,fm, cluster){
 ```
 
 
-```{r LOADDATA}
+```{r LOADDATA, echo = FALSE, display = FALSE, include = FALSE}
 
 ########################################################
 ## Loading the Data
@@ -61,27 +65,178 @@ all <- subset(judge.means, girls != "NaN") # subsets judge
 								  # whom we have fertility data
 ```
 
-```{r TABLE1}
+```{r TABLE1, echo = FALSE, display = FALSE, include = FALSE}
 
 aa <- table(all$republican, all$child)
 bb <- table(all$republican, all$girls)
 
 ## and now for the table:
 
-aa
-bb
+dataFramed <- aa %>% 
+  as.data.frame.matrix()
+
+# Create a column for the sums (N)
+
+dataFramedSum <- cbind(dataFramed, rowSums(dataFramed))
+
+# Add the title for the sums column
+
+colnames(dataFramedSum)[colnames(dataFramedSum) == 'rowSums(dataFramed)'] <- 'N'
+
+# Create row names for the columns
+
+row.names(dataFramedSum) = c("Democrat", "Republican")
+
+## and now for the table:
+
+dataFramedBB <- bb %>% 
+  as.data.frame.matrix()
+
+# Create a column for the sums (N)
+
+dataFramedSumBB <- cbind(dataFramedBB, rowSums(dataFramedBB))
+
+# Add the title for the sums column
+
+colnames(dataFramedSumBB)[colnames(dataFramedSumBB) == 'rowSums(dataFramedBB)'] <- 'N'
+
+# Create row names for the columns
+
+row.names(dataFramedSumBB) = c("Democrat", "Republican")
 
 ```
 
-```{r TABLE2}
+```{R table1Output, echo = FALSE}
+
+# Use Kable to output the table
+
+kable(dataFramedSum, caption = "Table 1")
+
+# Use Kable to output the table
+
+kable(dataFramedSumBB, caption = "Table 1 part 2")
+
+```
+
+```{r TABLE8, echo = FALSE, display = FALSE, include = FALSE}
+
+########################################################
+## Calculating the Weights (Number of Cases)
+########################################################
+
+no_cases <- matrix(data = NA, nrow = nrow(judge.means), ncol = 1)
+for(i in 1:length(no_cases)){
+	no_cases[i] <- nrow(women.cases[which(women.cases$name == judge.means$name[i]),])
+	}
+
+judge.means <- cbind(judge.means, no_cases)
+
+## total number of cases we are working with
+
+sum(judge.means$no_cases) 	# should be 2,674 reported in the paper
+
+########################################################
+## Calculating the Outcome Var
+########################################################
+
+no_liberalvote <- matrix(data = NA, nrow = nrow(judge.means), ncol = 1)
+for(i in 1:length(no_liberalvote)){
+	stuff <- women.cases[which(women.cases$name == judge.means$name[i]),]
+	no_liberalvote[i] <- nrow(subset(stuff, vote == 2 | vote == 3))
+	}
+
+lib_vote_share <- no_liberalvote/no_cases
+
+judge.means <- cbind(judge.means, no_liberalvote, lib_vote_share)
+judge.means <- subset(judge.means, girls != "NaN")
+
+########################################################
+## Subsetting Data to Various Populations (for use later)
+########################################################
+
+## just women:
+women.means <- subset(judge.means, woman == 1)
+
+## just men:
+men.means <- subset(judge.means, woman == 0)
+
+## just republicans:
+rep.means <- subset(judge.means, republican == 1)
+
+## just democrats
+dem.means <- subset(judge.means, republican == 0)
+
+########################################################
+## Table 8: Judges with 0 or 1 child
+########################################################
+
+## Including people who have zero children as a control 
+## suggested by AJPS editor 
+## (Note: Caution against making inferences on effect of
+## daughters among people with 0 children)
+
+my.out12 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child), 
+	data = subset(judge.means, child < 2), 
+		weights = judge.means$no_cases[which(judge.means$child < 2)])
+summary(my.out12)
+
+my.out13 <- lm(lib_vote_share ~ I(girls > 0), 
+	data = subset(judge.means, child == 1), 
+		weights = judge.means$no_cases[which(judge.means$child == 1)])
+summary(my.out13)
+
+## and then controlling for rep or dem:
+
+my.out14 <- lm(lib_vote_share ~ I(girls > 0) + I(republican==1), 
+	data = subset(judge.means, child == 1), 
+		weights = judge.means$no_cases[which(judge.means$child == 1)])
+summary(my.out14)
+
+```
+
+```{r table8output, echo = FALSE, results='asis'}
+
+kable(data.frame(), caption="Table 8")
+
+stargazer(my.out12, my.out13, my.out14, 
+	style = "ajps", type="html", omit.stat = c("f","ser"), dep.var.labels = "Liberal Judge-Vote")
+
+
+```
+
+
+```{r TABLE9,  echo = FALSE, display = FALSE, include = FALSE}
+
+########################################################
+## Table 9: Distribution of gender-related cases
+########################################################
+
+
+## just republicans:
+rep.means <- subset(judge.means, republican == 1)
+
+## just democrats
+dem.means <- subset(judge.means, republican == 0)
+
+
+
+aa <- table(dem.means$child, dem.means$girl)
+bb <- table(rep.means$child, rep.means$girl)
+
+aa.1 <- prop.table(table(dem.means$child, dem.means$girl),1)
+bb.1 <- prop.table(table(rep.means$child, rep.means$girl),1)
+
+colnames(aa.1) <- c("0 Girls", "1 Girl", "2 Girls", "3 Girls", "4 Girls", "5 Girls")
+
+colnames(bb.1) <- c("0 Girls", "1 Girl", "2 Girls", "3 Girls", "4 Girls")
+
 
 
 
 ```
 
-```{r TABLE3}
+```{r table9output, echo = FALSE}
 
-
+kable(cbind(aa.1, bb.1), caption = "Table 9")
 
 ```
-

@@ -9,6 +9,7 @@ library(xtable)
 library(reshape2)
 library(apsrtable)
 library(stargazer)
+library(knitr)
 # library(rms)
 
 # Load women cases.
