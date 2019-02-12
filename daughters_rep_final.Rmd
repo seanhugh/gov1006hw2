@@ -413,9 +413,7 @@ ggplot(judge.means, aes(lib_vote_share)) +
   xlim(-.4, 1.4) + ylim(0, 2.5) +
   labs(
     x = "Proportion of Cases Decided in a Feminist Direction",
-    title = "Figure 1: Distribution of the Proportion of Cases 
-       Decided in a Feminist Direction \n out of All Gender-Related 
-       Cases Decided, 1996-2002"
+    title = "Figure 1: Distribution of the Proportion of CasesDecided in a Feminist Direction \n out of All Gender-Related Cases Decided, 1996-2002"
   ) +
   theme(
     panel.grid.major = element_blank(),
@@ -426,8 +424,13 @@ ggplot(judge.means, aes(lib_vote_share)) +
     axis.ticks.y = element_blank(),
     legend.position = "none"
   ) +
-  annotate("text", label = "Less Feminist", x = .25, y = 2.5) +
-  annotate("text", label = "More Feminist", x = .75, y = 2.5)
+  annotate("text", label = "Less Feminist", x = .3, y = 2.5, color = "grey", size = 4) +
+  annotate("text", label = "More Feminist", x = .7, y = 2.5, color = "grey", size = 4) +
+  annotate("text", label = "Republicans", x = 0, y = 1.25, color = "red", size = 4) +
+  annotate("text", label = "Democrats", x = .9, y = .85, color = "blue", size = 4) +
+  annotate("text", label = "All", x = .2, y = .75, size = 4) +
+  geom_rect(xmin = -.5, xmax = 0, ymin = 0, ymax = .75, color = "white", fill = "white") +
+  geom_rect(xmin = 1, xmax = 1.5, ymin = 0, ymax = .75, color = "white", fill = "white")
 ```
 
 
@@ -436,12 +439,18 @@ ggplot(judge.means, aes(lib_vote_share)) +
 # Table 3
 #########
 
+# This shows the distribution of
+# number of gender-related cases
+# heard per judge in the three 
+# groups (all, Reps, and Dems).
 gg <- rbind(
   summary(judge.means$no_cases),
   summary(dem.means$no_cases),
   summary(rep.means$no_cases)
 )
 
+# Add row names and print
+# the table.
 rownames(gg) <- c("All Judges", "Democrats", "Republicans")
 
 kable(gg,
@@ -450,8 +459,6 @@ kable(gg,
   digits = 2
 ) %>%
   kable_styling(full_width = F)
-
-# Similar to table 2, I found it easier to use kable.
 ```
 
 ```{r table4, echo = FALSE}
@@ -460,44 +467,68 @@ kable(gg,
 ########################################################
 
 ################ Results for all judges
-
 # judge.means <- subset(judge.means, child > 0)
 
+# Regress liberal vote share on
+# number of girls. Include child FE
+# (i.e., only look for trends within
+# groups of judges with the same number of
+# total children) and weight by number of
+# total cases decided.
 my.out1 <- lm(lib_vote_share ~ as.factor(girls) + as.factor(child),
   data = judge.means, weights = judge.means$no_cases
 )
 
+# Regress liberal vote share on
+# having a girl at all. Child FE and
+# case number weights.
 my.out2 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child),
   data = judge.means, weights = judge.means$no_cases
 )
 
+# Regress liberal vote share on
+# having a girl at all while controlling
+# for being Republican, age, Catholic,
+# a woman, AfAm or Hispanic. Child FE and
+# case number weights.
 my.out3 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child) +
   republican + age + I(religion == 4) + woman +
   I(race == 2) + I(race == 3),
 data = judge.means, weights = judge.means$no_cases
 )
 
+# Same regression as my.out3 but controlling
+# for circuit number.
 my.out4 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child) +
   republican + age + I(religion == 4) + woman +
   I(race == 2) + I(race == 3) + as.factor(circuit.1),
 data = judge.means, weights = judge.means$no_cases
 )
 
-################ Results for judges between 1 and 4 children
+################ Results for judges with between 1 and 4 children.
 
+# Regress liberal vote share
+# on number of girls for a subset
+# of the judges.
 my.out5 <- lm(lib_vote_share ~ as.factor(girls) + as.factor(child),
   data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)]
 )
 
+# Regress vote share on having one girl.
 my.out6 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child),
   data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)]
 )
 
+# Regress vote share on having
+# one girl, plus six control variables.
 my.out7 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child) + republican +
   age + I(religion == 4) + woman + I(race == 2) + I(race == 3),
 data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_cases[which(judge.means$child > 0 & judge.means$child < 5)]
 )
 
+# Regress vote share on having one girl,
+# plus seven control variables (including
+# circuit).
 my.out8 <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child) + republican +
   age + I(religion == 4) + woman + I(race == 2) + I(race == 3) +
   as.factor(circuit.1),
