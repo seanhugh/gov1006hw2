@@ -159,8 +159,8 @@ colnames(demographic_table) <- c("All", "Democrats", "Republicans","Women", "Men
 rownames(demographic_table) <- c("Mean No. Children",
                                  "Mean No. Girls",
                                  "Proportion who have 0 children",
-                                 "1 children", "2 children", "3 children",
-                                 "4 children", "5 Children", "6 Children or More",
+                                 "1 Child", "2 Children", "3 Children",
+                                 "4 Children", "5 Children", "6 Children or More",
                                  "Proportion Female", "Proportion Republican",
                                  "Proportion White", "Mean Year Born", "N")
 xtable(demographic_table,
