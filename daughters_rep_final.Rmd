@@ -447,30 +447,17 @@ my.out8 <- lm(lib_vote_share ~ I(girls>0) + as.factor(child) + republican +
 ```
 
 ```{r t4, results='asis', echo = FALSE}
-stargazer(my.out1, my.out2, my.out3, my.out4, 
-          my.out5, my.out6, my.out7, my.out8,
+
+stargazer(my.out1, my.out2, my.out3, my.out4, my.out5, my.out6, my.out7, my.out8,
           header = FALSE,
           style = "ajps",
           type = "html",
           omit.stat = c("f","ser"),
-          dep.var.labels = "Table 4: Weighted Least Squares 
-          Results, Gender-Related Cases Only",
-          notes = "Outcome is proportion of feminist votes.  
-          Models 1--4 are for all judges, while Models 5--8 are 
-          for judges with 1--4 children.  (No judge among those 
-          with 1--4 children had four girls.) All models include 
-          fixed effects for number of children and use weights
-          based on the number of cases heard by each judge.",
+          dep.var.labels = "Table 4: Weighted Least Squares Results, Gender-Related Cases Only",
+          notes = "Outcome is proportion of feminist votes.  Models 1--4 are for all judges, while Models 5--8 are for judges with 1--4 children.  (No judge among those with 1--4 children had four girls.) All models include fixed effects for number of children and use weights based on the number of cases heard by each judge.",
           digits = 2,
           omit = c("circuit"),
-          covariate.labels = c("1 Girl","2 Girls","3 Girls",
-                               "4 Girls","5 Girls","At Least 1 Girl", 
-                               "1 Child","2 Children","3 Children",
-                               "4 Children","5 Children","6 Children",
-                               "7 Children","8 Children","9 Children",
-                               "Republican","Age at Investiture",
-                               "Catholic","Woman","African American",
-                               "Hispanic","Constant"))
+          covariate.labels = c("1 Girl","2 Girls","3 Girls","4 Girls","5 Girls","At Least 1 Girl", "1 Child","2 Children","3 Children","4 Children","5 Children","6 Children","7 Children","8 Children","9 Children","Republican","Age at Investiture","Catholic","Woman","African American","Hispanic","Constant"))
 
 ```
 
@@ -542,10 +529,7 @@ stargazer(my.outREP, my.outDEM, my.outMEN, my.outWOMEN, my.outREPMEN,
                                            "3 Children", 
                                            "4 Children",
                                            "Constant"), 
-          notes = "Outcome is judges' proportion of feminist 
-          votes on gender-related cases. All models include 
-          fixed effects for total number of children and use 
-          weights based on the number of cases heard by each judge.", 
+          notes = "Outcome is judges' proportion of feminist votes on gender-related cases. All models include fixed effects for total number of children and use weights based on the number of cases heard by each judge.", 
           label = "t:results_party")
 
 ```
@@ -592,8 +576,7 @@ stargazer(my.out12, my.out13, my.out14,
 	type="html",
 	digits = 2,
 	omit.stat = c("f","ser"),
-	dep.var.labels = "Table 8: Voting Record in Feminist 
-	Direction (Voting Record in Feminist Direction)")
+	dep.var.labels = "Table 8: Voting Record in Feminist Direction (Voting Record in Feminist Direction)")
 
 
 ```
@@ -635,9 +618,7 @@ colnames(bb.1) <- c("0 Girls",
 
 ```{r table9output, echo = FALSE}
 
-kable(cbind(aa.1, bb.1), caption = "Table 9: Proportion of Girls 
-      (Conditional on Number of Children) for U.S. Courts of 
-      Appeals Judges Participating in Gender-Related Cases, 1996-2002", 
+kable(cbind(aa.1, bb.1), caption = "Table 9: Proportion of Girls (Conditional on Number of Children) for U.S. Courts of Appeals Judges Participating in Gender-Related Cases, 1996-2002", 
       digits = 2) %>%
   kable_styling(full_width = F)
 
