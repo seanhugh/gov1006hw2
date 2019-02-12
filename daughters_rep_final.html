@@ -1981,6 +1981,14 @@ Outcome is proportion of feminist votes. Models 1–4 are for all judges, while 
 </td>
 </tr>
 </table>
+<pre class="r"><code>## Replacing the normal SEs with the bootstrap SEs for the final Table 5
+
+#stargazer(my.out7, my.out8, my.out9, my.out10, my.out11, my.out12, 
+#   style = &quot;ajps&quot;, omit.stat = c(&quot;f&quot;,&quot;ser&quot;), dep.var.labels = &quot;Logit and ordered logit results, gender cases only. Outcome is whether judge in a case votes in a feminist direction (Columns 1--5) or in a conservative, moderate, or liberal direction (Column 6).  All models include fixed effects for total number of children and Columns 3--6 include circuit and year fixed effects. Column 5 additionally includes standard errors clustered at the case level&quot;, covariate.labels = c(&quot;1 Girl&quot;,&quot;2 Girls&quot;,&quot;3 Girls&quot;,&quot;At Least 1 Girl&quot;,
+#   &quot;2 Children&quot;,&quot;3 Children&quot;,&quot;4 Children&quot;,&quot;Republican&quot;,&quot;Age at Investiture&quot;,&quot;Catholic&quot;,&quot;Woman&quot;,    
+#   &quot;African American&quot;,&quot;Hispanic&quot;, &quot;10th Cir&quot;, &quot;11th Cir&quot;,&quot;2nd Cir&quot;,&quot;3rd Cir&quot;,
+#   &quot;4th Cir&quot;,&quot;5th Cir&quot;,&quot;6th Cir&quot;,&quot;7th Cir&quot;,&quot;8th Cir&quot;,&quot;9th Cir&quot;,&quot;DC&quot;,&quot;1997&quot;,&quot;1998&quot;,&quot;1999&quot;,&quot;2000&quot;,&quot;2001&quot;,&quot;2002&quot;,
+#   &quot;Employment&quot;,&quot;Pregnancy&quot;,&quot;Reproduction&quot;,&quot;Title IX&quot;,&quot;Constant&quot;), se = list(my.out7 = NULL, my.out8 = NULL, my.out8 = NULL, my.out10 = NULL,my.out11 = bcse11, my.out12 = bcse12), digits = 2)</code></pre>
 <table style="text-align:center">
 <tr>
 <td colspan="6" style="border-bottom: 1px solid black">
