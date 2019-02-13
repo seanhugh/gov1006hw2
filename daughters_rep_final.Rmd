@@ -23,6 +23,7 @@ library(tidyverse)
 library(dplyr)
 library(pander)
 library(kableExtra)
+library(stats)
 ```
 
 ```{r LOADDATA, echo = FALSE, display = FALSE, include = FALSE}
@@ -463,7 +464,7 @@ kable(gg,
 
 ```{r table4, echo = FALSE}
 ########################################################
-## Table 4: Core Results (WLS)
+## Table 4: Core Results (WLS) Calculations
 ########################################################
 
 ################ Results for all judges
@@ -536,7 +537,12 @@ data = subset(judge.means, child < 5 & child > 0), weights = judge.means$no_case
 )
 ```
 
+***
+
 ```{r t4, results='asis', echo = FALSE}
+########################################################
+## Table 4: Core Results (WLS) Tables
+########################################################
 
 stargazer(my.out1, my.out2, my.out3, my.out4, my.out5, my.out6, my.out7, my.out8,
   header = FALSE,
@@ -558,55 +564,69 @@ stargazer(my.out1, my.out2, my.out3, my.out4, my.out5, my.out6, my.out7, my.out8
 ## Table 5: Core Results (Case-Level)
 #######################################################
 
-my.out7 <- zelig(progressive.vote ~ as.factor(girls) + as.factor(child),
-  model = "logit", data = subset(women.cases, child < 5 & child > 0)
-)
-summary(my.out7)
+# Logit regression of liberal vote share on number of girls (up to 3).
+# With child FE (as with all later ones in this section).
+my.out7 <- glm(progressive.vote ~ as.factor(girls) + as.factor(child),
+               family = binomial(link = "logit"),
+               data = subset(women.cases, child < 5 & child > 0))
 
-my.out8 <- zelig(progressive.vote ~ I(girls > 0) + as.factor(child),
-  model = "logit", data = subset(women.cases, child < 5 & child > 0)
-)
-summary(my.out8)
+# Logit regression of liberal vote share on having at least one girl.
+my.out8 <- glm(progressive.vote ~ I(girls > 0) + as.factor(child),
+               family = binomial("logit"),
+               data = subset(women.cases, child < 5 & child > 0))
 
-my.out9 <- zelig(progressive.vote ~ I(girls > 0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year),
-  model = "logit", data = subset(women.cases, child < 5 & child > 0)
-)
-summary(my.out9)
+# Logit regression of vote share on having at least 
+# one girl, controlling for Republican, age, Catholic,
+# woman, AfAm, and Hispanic. Also year FE and circuit FE (as
+# with all later regressions in this section).
+my.out9 <- glm(progressive.vote ~ I(girls > 0) + as.factor(child) + republican + age +
+                 I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) +
+                 as.factor(year),
+               family = binomial("logit"),
+               data = subset(women.cases, child < 5 & child > 0))
 
-my.out10 <- zelig(progressive.vote ~ I(girls > 0) + as.factor(child) + republican
-  + age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year)
-  + as.factor(area), data = subset(women.cases, child < 5 & child > 0), model = "logit")
-summary(my.out10)
+# Logit regression like the one above, 
+# but including employment, pregnancy, reproduction,
+# and Title IX controls.
+my.out10 <- glm(progressive.vote ~ I(girls > 0) + as.factor(child) + republican
+                + age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year) + as.factor(area),
+               family = binomial("logit"),
+               data = subset(women.cases, child < 5 & child > 0))
 
-## including clustered standard errors at the case level (bootstrap)
-
-my.out11 <- zelig(progressive.vote ~ I(girls > 0) + as.factor(child) + republican
+# Final logit regression should
+# have case-level clustered SEs, but this one does not.
+my.out11 <- glm(progressive.vote ~ I(girls > 0) + as.factor(child) + republican
   + age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year)
   + as.factor(area),
-data = subset(women.cases, child < 5 & child > 0), model = "logit"
-)
+  family = binomial("logit"),
+               data = subset(women.cases, child < 5 & child > 0))
+
+# Below should include clustered
+# standard errors, but this version
+# does not.
+
+# my.out12 <- glm(progressive.vote ~ I(girls > 0) + as.factor(child) + republican
+#   + age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year)
+#   + as.factor(area),
+#   data = subset(women.cases, child < 5 & child > 0),
+#   family = binomial("logit"))
 
 ## Note: Running the ordered logit with polr, in subsetting the data, there are some case areas
 ## in which there are no observations. Those coefficients are being dropped at POLR gives an
 ## warning. Nothing to worry.
 
-my.out12 <- zelig(as.factor(vote) ~ I(girls > 0) + as.factor(child) + republican + age + I(religion == 4) + woman + I(race == 2) + I(race == 3) + as.factor(circuit) + as.factor(year) + as.factor(area),
-  model = "ologit", data = subset(women.cases, child < 5 & child > 0)
-)
-summary(my.out12)
-
 ## Now: Calculating standard errors bootstrapped at the case level:
 ## Note: This takes about 10 minutes to run.
 
 ## Grab the data for these two models
-mod12 <- as.formula("~ progressive.vote + vote + girls +  child + republican +race + age + religion + woman + circuit + year + area + casename")
-dat12 <- model.frame(mod12, data = subset(women.cases, child < 5 & child > 0))
-dat12$casename <- as.character(dat12$casename)
+# mod12 <- as.formula("~ progressive.vote + vote + girls +  child + republican +race + age + religion + woman + circuit + year + area + casename")
+# dat12 <- model.frame(mod12, data = subset(women.cases, child < 5 & child > 0))
+# dat12$casename <- as.character(dat12$casename)
 
 ## Create list of data.frames for each case for easy reference
-casenames <- sort(unique(dat12$casename))
-caselist <- lapply(casenames, function(x) dat12[which(dat12$casename == x), ])
-names(caselist) <- casenames
+# casenames <- sort(unique(dat12$casename))
+# caselist <- lapply(casenames, function(x) dat12[which(dat12$casename == x), ])
+# names(caselist) <- casenames
 
 ## Running the bootstraps
 ## Note that not all of the coefficients will be sampled in any given of the
@@ -634,24 +654,31 @@ names(caselist) <- casenames
 # save(list=c("bcse11", "bcse12"), file = "bootstraps.RData")
 ## End bootstrap code here
 
-
 ## can re-load bootstraped data to avoid having to run previous code
 ## load("bootstraps.RData")
 ```
 
-```{r t5, echo = FALSE}
+***
 
-## Replacing the normal SEs with the bootstrap SEs for the final Table 5
+```{r t5, results='asis', echo = FALSE, warning = FALSE}
 
-# stargazer(my.out7, my.out8, my.out9, my.out10, my.out11, my.out12,
-# 	style = "ajps", omit.stat = c("f","ser"), dep.var.labels = "Logit and ordered logit results, gender cases only. Outcome is whether judge in a case votes in a feminist direction (Columns 1--5) or in a conservative, moderate, or liberal direction (Column 6).  All models include fixed effects for total number of children and Columns 3--6 include circuit and year fixed effects. Column 5 additionally includes standard errors clustered at the case level", covariate.labels = c("1 Girl","2 Girls","3 Girls","At Least 1 Girl",
-# 	"2 Children","3 Children","4 Children","Republican","Age at Investiture","Catholic","Woman",
-# 	"African American","Hispanic", "10th Cir", "11th Cir","2nd Cir","3rd Cir",
-# 	"4th Cir","5th Cir","6th Cir","7th Cir","8th Cir","9th Cir","DC","1997","1998","1999","2000","2001","2002",
-# 	"Employment","Pregnancy","Reproduction","Title IX","Constant"), se = list(my.out7 = NULL, my.out8 = NULL, my.out8 = NULL, my.out10 = NULL,my.out11 = bcse11, my.out12 = bcse12), digits = 2)
+#######################################################
+## Table 5: Core Results (Case-Level) Table
+#######################################################
+
+stargazer(my.out7, my.out8, my.out9, my.out10, my.out11,
+	style = "ajps",
+	type = "html",
+	omit.stat = c("f","ser"),
+	omit = c("circuit", "year", "area"),
+	dep.var.labels = "Table 5: Logit and Ordered Logit Results, Gender-Related Cases Only.",
+	notes = "Outcome is whether judge in a case votes in a feminist direction (Columns 1--5) or in a conservative, moderate, or liberal direction (Column 6).  All models include fixed effects for total number of children and Columns 3--6 include circuit and year fixed effects. Column 5 additionally includes standard errors clustered at the case level",
+	covariate.labels = c("1 Girl","2 Girls","3 Girls","At Least 1 Girl",
+	"Republican","Age at Investiture","Catholic","Woman",
+	"African American","Hispanic", "Employment","Pregnancy","Reproduction","Title IX","Constant"), se = list(my.out7 = NULL, my.out8 = NULL, my.out8 = NULL, my.out10 = NULL,my.out11 = NULL), digits = 2)
 ```
 
-
+***
 
 ```{r table7, echo = FALSE, warning = FALSE}
 
@@ -715,6 +742,7 @@ my.outREPMEN <- lm(lib_vote_share ~ I(girls > 0) + as.factor(child),
 )
 ```
 
+
 ```{r t7, results='asis', echo = FALSE, warning = FALSE}
 
 stargazer(my.outREP, my.outDEM, my.outMEN, my.outWOMEN, my.outREPMEN,
@@ -734,7 +762,7 @@ stargazer(my.outREP, my.outDEM, my.outMEN, my.outWOMEN, my.outREPMEN,
 )
 ```
 
-
+***
 
 ```{r TABLE8, echo = FALSE, display = FALSE, include = FALSE}
 
@@ -782,6 +810,7 @@ stargazer(my.out12, my.out13, my.out14,
 )
 ```
 
+***
 
 ```{r TABLE9,  echo = FALSE, display = FALSE, include = FALSE}
 
