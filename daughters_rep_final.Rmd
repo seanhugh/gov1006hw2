@@ -26,6 +26,8 @@ library(kableExtra)
 library(stats)
 ```
 
+Good idea to include brief abstract at beginning of replications
+
 ```{r LOADDATA, echo = FALSE, display = FALSE, include = FALSE}
 
 ########################################################
@@ -149,6 +151,8 @@ kable(dataFramedSum, caption = "Table 1: Number of Children and Girls
 kable(dataFramedSumBB, caption = "Table 1: Part 2") %>%
   kable_styling(full_width = F)
 ```
+
+Really nice looking Table 1, also very elegant code used to create it
 
 
 ```{r, echo = FALSE}
@@ -332,6 +336,8 @@ kable(demographic_table, digits = 2, caption = "Table 2: Demographics
   kable_styling(full_width = F)
 ```
 
+Table 2 looks great, really nice titles on the tables
+
 ```{r calculate, echo = FALSE, display = FALSE, include = FALSE}
 
 ########################################################
@@ -389,6 +395,8 @@ rep.means <- subset(judge.means, republican == 1)
 dem.means <- subset(judge.means, republican == 0)
 ```
 
+Excellent comments above detailing what the authors are doing. This is very useful for me and you.
+
 ```{r echo = FALSE, fig.align="center"}
 ########################################################
 ## Figure 1
@@ -433,7 +441,7 @@ ggplot(judge.means, aes(lib_vote_share)) +
   geom_rect(xmin = -.5, xmax = 0, ymin = 0, ymax = .75, color = "white", fill = "white") +
   geom_rect(xmin = 1, xmax = 1.5, ymin = 0, ymax = .75, color = "white", fill = "white")
 ```
-
+Nice looking plot, probably better than what is actually in the paper!
 
 ```{r, echo = FALSE}
 #########
@@ -461,6 +469,8 @@ kable(gg,
 ) %>%
   kable_styling(full_width = F)
 ```
+
+Good
 
 ```{r table4, echo = FALSE}
 ########################################################
@@ -556,7 +566,7 @@ stargazer(my.out1, my.out2, my.out3, my.out4, my.out5, my.out6, my.out7, my.out8
   covariate.labels = c("1 Girl", "2 Girls", "3 Girls", "4 Girls", "5 Girls", "At Least 1 Girl", "1 Child", "2 Children", "3 Children", "4 Children", "5 Children", "6 Children", "7 Children", "8 Children", "9 Children", "Republican", "Age at Investiture", "Catholic", "Woman", "African American", "Hispanic", "Constant")
 )
 ```
-
+Beautiful regression table, but make sure the footnotes of the table explaining what indicates signigicance mirrors what is actually in the table
 
 ```{r table5, echo = FALSE, include = FALSE, display = FALSE}
 
@@ -677,7 +687,7 @@ stargazer(my.out7, my.out8, my.out9, my.out10, my.out11,
 	"Republican","Age at Investiture","Catholic","Woman",
 	"African American","Hispanic", "Employment","Pregnancy","Reproduction","Title IX","Constant"), se = list(my.out7 = NULL, my.out8 = NULL, my.out8 = NULL, my.out10 = NULL,my.out11 = NULL), digits = 2)
 ```
-
+Another great looking table, as comment as above regarding footnote indicating significance 
 ***
 
 ```{r table7, echo = FALSE, warning = FALSE}
@@ -857,4 +867,4 @@ kable(cbind(aa.1, bb.1),
 ) %>%
   kable_styling(full_width = F)
 ```
-
+Excellent job, this is a great replication. Really beautiful and well captioned tables, excellent figure, very thorough and clear comments
